@@ -1,9 +1,11 @@
 ### Module::Load test suite ###
 
+BEGIN { chdir 't' if -d 't' }
+
 use strict;
-use lib qw[../lib t/to_load];
+use lib qw[../lib to_load];
 use Module::Load;
-use Test::More tests => 8;
+use Test::More tests => 13;
 
 
 {
@@ -12,7 +14,7 @@ use Test::More tests => 8;
 
     eval { load $mod };
 
-    is( $@, '', q[Loading module] );
+    is( $@, '', qq[Loading module '$mod'] );
     ok( defined($INC{$file}), q[... found in %INC] );
 }
 
@@ -22,7 +24,7 @@ use Test::More tests => 8;
 
     eval { load $mod };
 
-    is( $@, '', q[Loading File] );
+    is( $@, '', qq[Loading File '$mod'] );
     ok( defined($INC{$file}), q[... found in %INC] );
 }
 
@@ -32,7 +34,7 @@ use Test::More tests => 8;
 
     eval { load $mod };
 
-    is( $@, '', q[Loading Ambigious Module] );
+    is( $@, '', qq[Loading Ambigious Module '$mod'] );
     ok( defined($INC{$file}), q[... found in %INC] );
 }
 
@@ -42,6 +44,19 @@ use Test::More tests => 8;
 
     eval { load $mod };
 
-    is( $@, '', q[Loading Ambigious File] );
+    is( $@, '', qq[Loading Ambigious File '$mod'] );
     ok( defined($INC{$file}), q[... found in %INC] );
 }
+
+### Test importing functions ###
+{   my $mod     = 'TestModule';
+    my @funcs   = qw[func1 func2];
+    
+    eval { load $mod, @funcs };
+    is( $@, '', qq[Loaded exporter module '$mod'] );
+    
+    for my $func (@funcs) {
+        ok( $mod->can($func),           "$mod -> can( $func )" );
+        ok( __PACKAGE__->can($func),    "we -> can ( $func )"  ); 
+    }        
+}    

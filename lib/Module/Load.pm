@@ -1,6 +1,6 @@
 package Module::Load;
 
-$VERSION = 0.05;
+$VERSION = '0.10';
 
 use strict;
 use File::Spec ();
@@ -13,7 +13,7 @@ sub import {
     }
 }
 
-sub load (*)  {
+sub load (*;@)  {
     my $mod = shift or return;
     my $who = _who();
 
@@ -30,6 +30,18 @@ sub load (*)  {
             die $err if $err;
         }
     }
+    __PACKAGE__->_export_to_level(1, $mod, @_) if @_;
+}
+
+### 5.004's Exporter doesn't have export_to_level.
+### Taken from Michael Schwerns Test::More and slightly modified
+sub _export_to_level {
+    my $pkg     = shift;
+    my $level   = shift;
+    my $mod     = shift;
+    my $callpkg = caller($level);
+
+    $mod->export($callpkg, @_);
 }
 
 sub _to_file{
@@ -73,18 +85,19 @@ Module::Load - runtime require of both modules and files
 
 	use Module::Load;
 
-        my $module = 'Data:Dumper';
+    my $module = 'Data:Dumper';
+    load Data::Dumper;      # loads that module
+    load 'Data::Dumper';    # ditto
+    load $module            # tritto
+    
+    my $script = 'some/script.pl'
+    load $script;
+    load 'some/script.pl';	# use quotes because of punctuations
+    
+    load thing;             # try 'thing' first, then 'thing.pm'
 
-	load Data::Dumper;      # loads that module
-        load 'Data::Dumper';    # ditto
-        load $module            # tritto
-
-        my $script = 'some/script.pl'
-        load $script;
-        load 'some/script.pl';	# use quotes because of punctuations
-
-
-        load thing;             # try 'thing' first, then 'thing.pm'
+    load CGI, ':standard'   # like 'use CGI qw[:standard]'
+    
 
 =head1 DESCRIPTION
 
@@ -136,21 +149,16 @@ on Unix rather than the Win32 C<\>. Otherwise perl will not read it's
 own %INC accurately double load files if they are required again, or
 in the worst case, core dump.
 
-=head1 TODO
-
-=over 4
-
-=item *
-
-Allow for C<import()> arguments and version checks when dealing with
-a module
-
-=back
+C<Module::Load> can not do implicit imports, only explicit imports.
+(in other words, you always have to specify expliclity what you wish
+to import from a module, even if the functions are in that modules'
+C<@EXPORT>)
 
 =head1 AUTHOR
 
-This module by
-Jos Boumans E<lt>kane@cpan.orgE<gt>.
+This module by Jos Boumans E<lt>kane@cpan.orgE<gt>.
+
+Thanks to Jonas B. Nielsen for making explicit imports work.
 
 =head1 COPYRIGHT
 

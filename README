@@ -1,0 +1,14 @@
+This is the README file for Module::Load, a perl module for simple
+laoding of modules in a DWIM-style.
+
+Please refer to 'perldoc Module::Load' after installation for details.
+
+
+Module::Load follows the standard perl module install process;
+
+perl Makefile.PL
+make
+make test
+make install
+
+The module uses no C or XS parts, so no c-compiler is required.

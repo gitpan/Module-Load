@@ -1,4 +1,10 @@
 ### Module::Load test suite ###
+BEGIN { 
+    if( $ENV{PERL_CORE} ) {
+        chdir '../lib/Module/Load' if -d '../lib/Module/Load';
+        unshift @INC, '../../..';
+    }
+} 
 
 BEGIN { chdir 't' if -d 't' }
 
